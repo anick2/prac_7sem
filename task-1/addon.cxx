@@ -29,13 +29,13 @@ using rtl::OUString;
 void TransposeTable(Reference <XTextTable> &xTable) {
 
     Reference < XCellRange > xCellRange(xTable, UNO_QUERY);
-    Reference<XTextTableCursor> cur = xTable->createCursorByCellName(OUString::createFromAscii("A1"));
+    Reference<XTextTableCursor> xCursor = xTable->createCursorByCellName(OUString::createFromAscii("A1"));
 
-    cur->gotoEnd(false);
-    int columns = cur->getRangeName()[0] - 'A' + 1;
+    xCursor->gotoEnd(false);
+    int columns = xCursor->getRangeName()[0] - 'A' + 1;
     std::string tmp;
-    for (int i = 1; i < cur->getRangeName().getLength(); i++){
-        tmp += cur->getRangeName()[i];
+    for (int i = 1; i < xCursor->getRangeName().getLength(); i++){
+        tmp += xCursor->getRangeName()[i];
     }
     
     int rows = std::atoi(tmp.c_str());
@@ -76,10 +76,8 @@ void TransposeSubtables( Reference< XFrame > &rxFrame ) {
     if (!xTextDocument.is())
         return;
 
-
     Reference < XTextTablesSupplier > xTextTablesSupplier(xTextDocument, UNO_QUERY);
     Reference < XNameAccess > xTables = xTextTablesSupplier->getTextTables();
-
 
     for (auto& tname : xTables->getElementNames())
     {
@@ -112,8 +110,8 @@ void GenerateTables(Reference < XFrame > &rxFrame) {
     Reference<XText> xText = xTextDocument->getText();
     Reference<XTextCursor> xTextCursor = xText->createTextCursor();
 
-    int countTable = 2 + std::rand() % 7;
-    for (int i = 0; i < countTable; i++) {
+    int tables = 2 + std::rand() % 7;
+    for (int i = 0; i < tables; i++) {
 
         Reference<XMultiServiceFactory> oDocMSF(xTextDocument, UNO_QUERY);
         Reference<XTextTable> xTable(oDocMSF->createInstance(OUString::createFromAscii("com.sun.star.text.TextTable")), UNO_QUERY);
@@ -130,16 +128,15 @@ void GenerateTables(Reference < XFrame > &rxFrame) {
         Reference<XTextContent> xTextContent(xTable, UNO_QUERY);
         xText->insertTextContent(xText->getEnd(), xTextContent, (unsigned char) 0);
 
+        Reference < XCellRange > xCellRange(xTable, UNO_QUERY);
+
         for (int i1 = 0; i1 < rows; i1++) {
             for (int i2 = 0; i2 < columns; i2++) {
 
-                std::string cell((char)('A' + i2) + std::to_string(i1 + 1));
-                Reference<XCell> xCell = xTable->getCellByName(OUString::createFromAscii(cell.c_str()));
-                Reference<XText> xTextCell(xCell, UNO_QUERY);
-                Reference<XTextCursor> xTextCursor2 = xTextCell->createTextCursor();
-
+                Reference < XText > xTextCell (xCellRange->getCellByPosition(i2, i1), UNO_QUERY);
+                Reference<XTextCursor> xxTextCursor = xTextCell->createTextCursor();
                 std::string str("row_" + std::to_string(i1) + std::string(" col_") + std::to_string(i2));
-                xTextCursor2->setString(OUString::createFromAscii(str.c_str()));
+                xxTextCursor->setString(OUString::createFromAscii(str.c_str()));
             }
         }
         xTextCursor->gotoEnd(false);
@@ -156,7 +153,7 @@ void SAL_CALL TableDispatchImpl::dispatch( const URL& aURL, const Sequence < Pro
             GenerateTables(mxFrame);
         }
         else if ( aURL.Path.equalsAscii("TransposeSubtables") ) {
-	        TransposeSubtables(mxFrame);
+            TransposeSubtables(mxFrame);
         }
     }
 }
@@ -234,4 +231,5 @@ sal_Bool SAL_CALL Addon::supportsService( const ::rtl::OUString& rServiceName ) 
 Sequence< ::rtl::OUString > SAL_CALL Addon::getSupportedServiceNames(  ) throw (RuntimeException) {
     return Addon_getSupportedServiceNames();
 }
+
 
