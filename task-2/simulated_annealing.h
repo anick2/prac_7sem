@@ -39,21 +39,21 @@ void SimulatedAnnealing<T, S, M>::Annealing() {
 
     double currTemp = temperature.getT();
     S currSolution = solution;
-    double currEnergy = solution.getEnergy();
+    uint64_t currEnergy = solution.getEnergy();
 
     int iteration = 0;
     int K_in = 0;
     while(K_in <= MAX_ITER_IN) {
         for(int i = 0; i < K; i++){
             S tempSolution = mutation.MutateSolution(currSolution);
-            double tempEnergy = tempSolution.getEnergy();
+            uint64_t tempEnergy = tempSolution.getEnergy();
 
             if(tempEnergy < solution.getEnergy()){
                 solution = tempSolution;
                 iteration = 0;
             }
 
-            double dF = tempEnergy - currEnergy;
+            uint64_t dF = tempEnergy - currEnergy;
 
             if (dF <= 0){
                 currSolution = tempSolution;
@@ -72,7 +72,6 @@ void SimulatedAnnealing<T, S, M>::Annealing() {
 
         currTemp = temperature.DropT(iteration);
     }
-    std::vector<std::vector<int>> v = solution.GetSolution();
 }
 
 template<typename T, typename S, typename M>

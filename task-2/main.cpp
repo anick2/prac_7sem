@@ -211,15 +211,15 @@ int main(int argc, char **argv) {
         Mutation mutation(n, m);
 
         Schedule solution;
-        unsigned int start_time =  clock();
+        auto begin = std::chrono::steady_clock::now();
         solution = CreateProcceses<BoltzmannLaw, Schedule, Mutation>(numProcesses, n, m, durations, temperature, schedule, mutation);
-        unsigned int end_time = clock();
-        unsigned int search_time = end_time - start_time;
-        std::cout << "Work time " << search_time / 10 << std::endl;
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+        std::cout << "Work time " << elapsed_ms.count() << std::endl;
         wait(NULL);
         std::cout << "Solution:" << std::endl;
         std::vector<std::vector<int>> vec = solution.GetSolution();
-        PrintVec(vec, i);
+        //PrintVec(vec, i);
         std::cout << "Total waiting time = " << solution.getEnergy() << std::endl;
         i++;
         std::cout << std::endl << std::endl;

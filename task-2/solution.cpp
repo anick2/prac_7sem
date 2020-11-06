@@ -1,4 +1,5 @@
 #include "solution.h"
+#include "mutation.h"
 #include "sockets.h"
 
 Schedule::Schedule(int nproc, std::vector<int> d, const std::vector<std::vector<int>> &sol) : n(nproc),
@@ -23,14 +24,18 @@ void Schedule::SetSolution(const std::vector<std::vector<int>> &x) {
     sch = x;
 }
 
-double Schedule::getEnergy() {
-    int sum = 0;
+uint64_t Schedule::getEnergy() {
+    uint64_t sum = 0;
     for (auto &x : sch) {
-        int accum = 0;
+        uint64_t accum = 0;
         for (auto &y : x) {
-            accum += accum + duration[y - 1];
+            __builtin_add_overflow(accum, duration[y - 1], &accum);
+            //accum += accum + duration[y - 1];
         }
-        sum += accum;
+         if (__builtin_add_overflow(sum, accum, &sum)){
+             std::cout << 'Overflow' << std::endl;
+         }
+        //sum += accum;
     }
     return sum;
 }
