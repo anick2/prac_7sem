@@ -32,7 +32,6 @@ double Schedule::getEnergy() {
         }
         sum += accum;
     }
-
     return sum;
 }
 

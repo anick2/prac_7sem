@@ -144,19 +144,19 @@ CreateProcceses(const int &NumProcesses, const int &n, const int &m, const std::
     Schedule solution;
 
     std::vector<pid_t> pids;
-    int server = 1;
+    int collect = 1;
 
     for (int i = 0; i < NumProcesses; i++) {
         pid_t pid = fork();
         if (!pid) {
-            server = 0;
+            collect = 0;
             break;
         } else {
             pids.push_back(pid);
         }
     }
 
-    if (!server) {
+    if (!collect) {
         Processing<T, S, M>(n, m, duration, temp, sol, mut);
     } else {
         solution = Collect(n, m, duration);
@@ -169,19 +169,16 @@ CreateProcceses(const int &NumProcesses, const int &n, const int &m, const std::
 
 
 int main(int argc, char **argv) {
-    /*if (argc != 2) {
+    if (argc != 2) {
         std::cout << "Enter the number of processes" << std::endl;
         return 1;
-    }  */
+    }
 
-    //int numProcesses = std::atoi(argv[1]);
-
-
-    int numProcesses = 2;
+    int numProcesses = std::atoi(argv[1]);
 
     std::ifstream fin("../tests.csv");
 
-    int n, m, duration, i = 1;
+    int n, m, i = 1;
     std::vector<int> durations;
 
     std::string temp, line;
@@ -198,7 +195,6 @@ int main(int argc, char **argv) {
         m = std::stoi(temp);
         std::cout << "Number of tasks: " << m << std::endl;
 
-
         std::cout << "Durations: ";
         durations.clear();
         for(int j = 0; j < m; j++){
@@ -208,7 +204,7 @@ int main(int argc, char **argv) {
         }
         std::cout << std::endl;
 
-        srand(unsigned(NULL));
+        srand((unsigned) time(NULL));
 
         BoltzmannLaw temperature(rand() * 0.00001);
         Schedule schedule(n, durations);
