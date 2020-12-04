@@ -8,17 +8,21 @@
 
 class TFactory {
     class TImpl;
+
     std::unique_ptr<const TImpl> Impl;
 public:
     TFactory();
+
     ~TFactory();
 
     template<typename T>
-    std::shared_ptr<TFunction> CreateObject(const std::string &name, T&& params) const;
-    std::shared_ptr<TFunction> CreateObject(const std::string &name, std::initializer_list<int> params) const;
-    std::shared_ptr<TFunction> CreateObject(const std::string &name) const;
+    std::shared_ptr<TFunction> CreateObject(const std::string &name, T &&params) const;
 
-    std::vector<std::string> GetAvailableFunctions() const;
+    [[nodiscard]] std::shared_ptr<TFunction> CreateObject(const std::string &name, std::initializer_list<int> params) const;
+
+    [[nodiscard]] std::shared_ptr<TFunction> CreateObject(const std::string &name) const;
+
+    [[nodiscard]] std::vector<std::string> GetAvailableFunctions() const;
 };
 
 class TFactory::TImpl {
@@ -26,8 +30,10 @@ class TFactory::TImpl {
     class ICreator {
     public:
         virtual ~ICreator() = default;
-        virtual std::shared_ptr<TFunction> Create(void* params) const = 0;
-        virtual std::shared_ptr<TFunction> Create() const = 0;
+
+        virtual std::shared_ptr<TFunction> Create(void *params) const = 0;
+
+        [[nodiscard]] virtual std::shared_ptr<TFunction> Create() const = 0;
     };
 
     using TCreatorPtr = std::shared_ptr<ICreator>;
@@ -36,22 +42,22 @@ class TFactory::TImpl {
 
 public:
 
-    template <class TCurrentObject, typename TParam>
-    class TCreator : public ICreator{
+    template<class TCurrentObject, typename TParam>
+    class TCreator : public ICreator {
 
-        std::shared_ptr<TFunction> Create(void* params) const override{
-            return std::make_shared<TCurrentObject>(*(static_cast<TParam*>(params)));
+        std::shared_ptr<TFunction> Create(void *params) const override {
+            return std::make_shared<TCurrentObject>(*(static_cast<TParam *>(params)));
         }
 
-        std::shared_ptr<TFunction> Create() const override {
+        [[nodiscard]] std::shared_ptr<TFunction> Create() const override {
             return std::make_shared<TCurrentObject>();
         }
     };
 
-    TImpl() { RegisterAll();}
+    TImpl() { RegisterAll(); }
 
-    template <typename T, typename P>
-    void RegisterCreator(const std::string& name) {
+    template<typename T, typename P>
+    void RegisterCreator(const std::string &name) {
         RegisteredCreators[name] = std::make_shared<TCreator<T, P>>();
     }
 
@@ -64,7 +70,7 @@ public:
     }
 
     template<typename T>
-    std::shared_ptr<TFunction> CreateObject(const std::string& n, T&& params) const {
+    std::shared_ptr<TFunction> CreateObject(const std::string &n, T &&params) const {
         auto creator = RegisteredCreators.find(n);
         if (creator == RegisteredCreators.end()) {
             return nullptr;
@@ -72,7 +78,7 @@ public:
         return creator->second->Create(std::addressof(params));
     }
 
-    std::shared_ptr<TFunction> CreateObject(const std::string& n) const {
+    [[nodiscard]] std::shared_ptr<TFunction> CreateObject(const std::string &n) const {
         auto creator = RegisteredCreators.find(n);
         if (creator == RegisteredCreators.end()) {
             return nullptr;
@@ -80,9 +86,9 @@ public:
         return creator->second->Create();
     }
 
-    std::vector<std::string> GetAvailableFunctions() const {
+    [[nodiscard]] std::vector<std::string> GetAvailableFunctions() const {
         std::vector<std::string> result;
-        for (const auto& creatorPair : RegisteredCreators) {
+        for (const auto &creatorPair : RegisteredCreators) {
             result.push_back(creatorPair.first);
         }
         return result;
@@ -91,14 +97,15 @@ public:
 };
 
 TFactory::TFactory() : Impl(std::make_unique<TFactory::TImpl>()) {}
-TFactory::~TFactory()= default;
+
+TFactory::~TFactory() = default;
 
 std::vector<std::string> TFactory::GetAvailableFunctions() const {
     return Impl->GetAvailableFunctions();
 }
 
 template<typename T>
-std::shared_ptr<TFunction> TFactory::CreateObject(const std::string &name, T&& params) const {
+std::shared_ptr<TFunction> TFactory::CreateObject(const std::string &name, T &&params) const {
     return Impl->CreateObject(name, std::forward<T>(params));
 }
 

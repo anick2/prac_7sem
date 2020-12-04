@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpotentially-evaluated-expression"
 #pragma once
 
 #include <utility>
@@ -31,15 +33,6 @@ public:
 
 };
 
-template<typename T>
-bool CheckType(T &f) {
-    auto is_base = std::is_base_of<typename std::remove_reference<decltype(f)>::type, TFunction>::value;
-    if (!is_base) {
-        throw std::logic_error("type error");
-    }
-    return is_base;
-}
-
 class TIdent : public TFunction {
 public:
     TIdent(double x = 0) {}
@@ -66,7 +59,6 @@ public:
 
 class TPower : public TFunction {
     int power;
-    bool braces = false;
 public:
     TPower(int p = 0) : power(p) {}
 
@@ -79,7 +71,6 @@ public:
 
 class TExp : public TFunction {
     double power;
-    bool braces = false;
 public:
     TExp(double p = 0) : power(p) {}
 
@@ -284,35 +275,55 @@ double TFunction::GetDeriv(double x) {
     return val;
 }
 
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator+ (T&& f, TFunction&& g){
+    throw std::logic_error("bad argument");
+}
 
-template<typename T, typename U>
-std::enable_if_t<std::is_base_of<TFunction, std::decay_t<T>>::value ^
-                 std::is_base_of<TFunction, std::decay_t<U>>::value, TFunction>
-operator+ (T&& f, U&& g){
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator- (T&& f, TFunction&& g){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator* (T&& f, TFunction&& g){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator/ (T&& f, TFunction&& g){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator+ (TFunction& g, T&& f){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator- (TFunction& g, T&& f){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator* (TFunction& g, T&& f){
+    throw std::logic_error("bad argument");
+}
+
+template<typename T>
+std::enable_if_t<!std::is_base_of<TFunction, std::decay_t<T>>::value, TFunction>
+operator/ (TFunction& g, T&& f){
     throw std::logic_error("bad argument");
 }
 
 
-template<typename T, typename U>
-std::enable_if_t<std::is_base_of<TFunction, std::decay_t<T>>::value ^
-                 std::is_base_of<TFunction, std::decay_t<U>>::value, TFunction>
-operator- (T&& f, U&& g) {
-    throw std::logic_error("bad argument");
-}
 
 
-template<typename T, typename U>
-std::enable_if_t<std::is_base_of<TFunction, std::decay_t<T>>::value ^
-                 std::is_base_of<TFunction, std::decay_t<U>>::value, TFunction>
-operator* (T&& f, U&& g) {
-    throw std::logic_error("bad argument");
-}
-
-
-template<typename T, typename U>
-std::enable_if_t<std::is_base_of<TFunction, std::decay_t<T>>::value ^
-                 std::is_base_of<TFunction, std::decay_t<U>>::value, TFunction>
-operator/ (T&& f, U&& g) {
-    throw std::logic_error("bad argument");
-}
-
+#pragma clang diagnostic pop
