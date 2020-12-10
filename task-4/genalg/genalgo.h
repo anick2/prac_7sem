@@ -97,6 +97,7 @@ int SurvivorFunc::GetValue(Chromosome x) {
     for (int i = 0; i <= ITER; i++) {
         tmp.Step();
     }
+    if (! (x.GetField() != tmp)) std::cout << "HERE" << std::endl;
     return (x.GetField() != tmp) ? tmp.NumFilled() : -1;
 }
 
@@ -171,8 +172,7 @@ void GeneticAlgo<S, H, M, F>::FineSolution() {
     int n = std::count_if(fs.begin(), fs.end(), [](int i) { return i == -1; });
     if (n == 0) return;
     else {
-        int fine = *std::upper_bound(fs.begin(), fs.end(), -1);
-        fine = (fine) ? fine - 1 : 0;
+        int fine = *std::upper_bound(fs.begin(), fs.end(), 0) - 1;
         for (int i = 0; i < n; i++) {
             auto it = std::find_if(fs.begin(), fs.end(), [](int i) { return i == -1; });
             *it = fine;
